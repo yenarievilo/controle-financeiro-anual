@@ -1,26 +1,26 @@
-# Personal Finance Tracker
+#  Controle Financeiro Pessoal
 
-A web app for tracking monthly expenses, installments, and net salary calculation.
+App web para controle de gastos mensais, parcelas e cálculo de salário líquido.
 
-## Features
+## Funcionalidades
 
-- Expense tracking by category
-- Installment purchase control
-- Net salary calculation 
-- Cloud sync via Supabase
-- Offline mode with local cache
+- Lançamento de gastos por categoria
+- Controle de compras parceladas
+- Cálculo de salário líquido (INSS + IRRF + sindicato)
+- Sincronização via Supabase
+- Modo offline com cache local
 
 ## Stack
 
-- Vanilla HTML/CSS/JS (no framework)
+- HTML/CSS/JS puro (sem framework)
 - Supabase (PostgreSQL + REST API)
 
-## Security
+## Segurança
 
-This project uses Supabase's `publishable key` exposed in the frontend —
-an intentional pattern explicitly documented by Supabase for client-side
-applications.
+Este projeto utiliza a `publishable key` do Supabase exposta no frontend —
+comportamento intencional e documentado pela própria plataforma para aplicações
+client-side.
 
-Data protection is enforced via **Row Level Security (RLS)** at the database
-level, with policies that isolate access by `device_id` through a request
+A proteção dos dados é feita via **Row Level Security (RLS)** diretamente no
+banco de dados, com policies que isolam o acesso por `device_id` via request
 header. 
