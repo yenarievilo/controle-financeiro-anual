@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>💰 Controle Financeiro</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif; background: #F0F4FF; min-height: 100vh; }
+
+.hero { background: linear-gradient(135deg, #1A1A2E 0%, #0F3460 100%); padding: 48px 24px 28px; color: #fff; }
+.hero-label { font-size: 11px; opacity: 0.6; letter-spacing: 2px; text-transform: uppercase; }
+.hero-total { font-size: 36px; font-weight: 800; margin-top: 4px; }
+.hero-sub { font-size: 13px; opacity: 0.7; margin-top: 4px; }
+.hero-pills { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+.hero-pill { background: rgba(255,255,255,0.12); border-radius: 20px; padding: 5px 12px; font-size: 12px; }
+.hero-pill span { font-weight: 700; }
+.hero-pill.verde { background: rgba(46,204,113,0.25); }
+.hero-pill.vermelho { background: rgba(231,76,60,0.25); }
+
+.content { padding: 16px 16px 100px; }
+.card { background: #fff; border-radius: 16px; padding: 14px 16px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.07); }
+.section-label { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+
+.mes-scroll { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.mes-scroll::-webkit-scrollbar { display: none; }
+.mes-btn { min-width: 68px; background: #F0F4FF; color: #555; border: none; border-radius: 10px; padding: 8px 10px; cursor: pointer; flex-shrink: 0; font-family: inherit; transition: all 0.15s; }
+.mes-btn.ativo { background: #1A1A2E; color: #fff; }
+.mes-btn .mes-nome { font-size: 12px; font-weight: 600; }
+.mes-btn .mes-val { font-size: 9px; margin-top: 2px; opacity: 0.8; }
+
+.acoes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+.acao-btn { border: none; border-radius: 16px; padding: 20px 14px; cursor: pointer; text-align: left; font-family: inherit; }
+.acao-btn.primario { background: linear-gradient(135deg, #1A1A2E, #0F3460); color: #fff; box-shadow: 0 4px 16px rgba(26,26,46,0.3); }
+.acao-btn.secundario { background: #fff; color: #1A1A2E; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+.acao-btn.terciario { background: linear-gradient(135deg, #0F3460, #1a6090); color: #fff; box-shadow: 0 4px 16px rgba(15,52,96,0.3); }
+.acao-btn.quaternario { background: linear-gradient(135deg, #1a6090, #2471a3); color: #fff; box-shadow: 0 4px 16px rgba(26,96,144,0.3); }
+.acao-icon { font-size: 24px; }
+.acao-titulo { font-size: 15px; font-weight: 700; margin-top: 6px; }
+.acao-sub { font-size: 10px; margin-top: 2px; opacity: 0.65; }
+
+.cat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.cat-btn { background: #fff; border: 2px solid transparent; border-radius: 14px; padding: 10px 6px; cursor: pointer; text-align: center; font-family: inherit; transition: all 0.15s; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+.cat-btn.ativo { background: #1A1A2E; border-color: #1A1A2E; box-shadow: 0 4px 16px rgba(26,26,46,0.25); }
+.cat-emoji { font-size: 22px; }
+.cat-nome { font-size: 10px; font-weight: 600; color: #333; margin-top: 3px; line-height: 1.2; }
+.cat-btn.ativo .cat-nome { color: #fff; }
+.cat-subtotal { font-size: 9px; color: #4A90E2; margin-top: 2px; }
+.cat-btn.ativo .cat-subtotal { color: #adf; }
+
+.form-card { background: #fff; border-radius: 18px; padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 14px; }
+.form-titulo { font-size: 13px; font-weight: 700; color: #1A1A2E; margin-bottom: 14px; }
+.form-label { font-size: 11px; font-weight: 600; color: #888; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid #E0E6FF; font-size: 15px; font-family: inherit; margin-bottom: 10px; outline: none; background: #fff; }
+.form-input:focus { border-color: #4A90E2; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.parcela-toggle { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; padding: 10px 14px; background: #F0F4FF; border-radius: 10px; cursor: pointer; }
+.toggle-switch { width: 44px; height: 24px; background: #ddd; border-radius: 12px; position: relative; transition: background 0.2s; flex-shrink: 0; }
+.toggle-switch.on { background: #1A1A2E; }
+.toggle-knob { width: 20px; height: 20px; background: #fff; border-radius: 10px; position: absolute; top: 2px; left: 2px; transition: left 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
+.toggle-switch.on .toggle-knob { left: 22px; }
+.toggle-label { font-size: 13px; font-weight: 600; color: #333; }
+.toggle-sub { font-size: 11px; color: #888; margin-top: 1px; }
+.btn-salvar { width: 100%; background: linear-gradient(135deg, #1A1A2E, #0F3460); color: #fff; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 700; cursor: pointer; font-family: inherit; }
+
+.lancamento-item { background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.lanc-row { display: flex; align-items: center; justify-content: space-between; }
+.lanc-valor { font-size: 14px; font-weight: 700; color: #1A1A2E; }
+.lanc-desc { font-size: 12px; color: #888; margin-top: 2px; }
+.lanc-parcela { font-size: 10px; background: #E8F4FD; color: #2471A3; padding: 2px 8px; border-radius: 10px; margin-top: 4px; display: inline-block; }
+.btn-remover { background: #FFF0F0; border: none; color: #E74C3C; border-radius: 8px; padding: 6px 10px; font-size: 16px; cursor: pointer; flex-shrink: 0; margin-left: 8px; }
+
+.resumo-cat { background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.resumo-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.resumo-nome { font-size: 14px; font-weight: 600; color: #1A1A2E; }
+.resumo-valor { font-size: 14px; font-weight: 700; color: #1A1A2E; }
+.barra-bg { background: #F0F4FF; border-radius: 4px; height: 4px; }
+.barra-fill { background: linear-gradient(90deg, #4A90E2, #0F3460); border-radius: 4px; height: 4px; transition: width 0.5s; }
+.barra-pct { font-size: 10px; color: #aaa; text-align: right; margin-top: 4px; }
+.grupo-header { font-size: 11px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 1px; display: flex; justify-content: space-between; margin-bottom: 8px; margin-top: 16px; }
+.grupo-header span:last-child { color: #4A90E2; }
+
+.salario-card { background: linear-gradient(135deg, #0a2540, #1a3a5c); border-radius: 18px; padding: 20px; margin-bottom: 14px; color: #fff; }
+.sal-titulo { font-size: 12px; opacity: 0.7; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; }
+.sal-label { font-size: 11px; opacity: 0.7; margin-bottom: 4px; }
+.sal-input { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid rgba(255,255,255,0.2); font-size: 18px; font-weight: 700; font-family: inherit; background: rgba(255,255,255,0.1); color: #fff; outline: none; }
+.sal-input::placeholder { color: rgba(255,255,255,0.4); }
+.sal-input:focus { border-color: rgba(255,255,255,0.5); }
+.sal-breakdown { background: rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; margin-top: 12px; }
+.sal-row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; font-size: 13px; }
+.sal-row.total { border-top: 1px solid rgba(255,255,255,0.2); margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 15px; }
+.sal-row .label { opacity: 0.8; }
+.sal-row .val-neg { color: #ff8080; }
+.sal-row .val-pos { color: #7fffb0; font-size: 18px; }
+.sal-saldo { margin-top: 12px; background: rgba(255,255,255,0.08); border-radius: 12px; padding: 14px; }
+.sal-saldo-label { font-size: 11px; opacity: 0.7; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
+.sal-saldo-val { font-size: 22px; font-weight: 800; }
+.sal-saldo-val.positivo { color: #7fffb0; }
+.sal-saldo-val.negativo { color: #ff8080; }
+.sal-saldo-sub { font-size: 11px; opacity: 0.6; margin-top: 2px; }
+
+.quick-item { background: #fff; border-radius: 12px; padding: 12px 14px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 4px rgba(0,0,0,0.06); }
+.quick-nome { font-size: 14px; }
+.quick-val { font-size: 14px; font-weight: 700; color: #1A1A2E; }
+
+.back-btn { background: rgba(255,255,255,0.15); border: none; color: #fff; border-radius: 20px; padding: 6px 14px; font-size: 13px; cursor: pointer; margin-bottom: 12px; font-family: inherit; }
+.empty { text-align: center; padding: 50px 20px; color: #bbb; }
+.empty-icon { font-size: 48px; }
+.empty-text { font-size: 15px; margin-top: 12px; font-weight: 500; }
+.empty-sub { font-size: 13px; margin-top: 6px; }
+
+.tabs { display: flex; background: #F0F4FF; border-radius: 12px; padding: 3px; margin-bottom: 14px; }
+.tab { flex: 1; padding: 8px; text-align: center; font-size: 13px; font-weight: 600; color: #888; border: none; background: none; border-radius: 10px; cursor: pointer; font-family: inherit; }
+.tab.ativo { background: #fff; color: #1A1A2E; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
+
+/* Loading overlay */
+#loading { position: fixed; inset: 0; background: rgba(26,26,46,0.85); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; color: #fff; }
+#loading .spin { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.2); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 14px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+#loading .load-text { font-size: 14px; opacity: 0.8; }
+
+/* Sync indicator */
+#sync-bar { position: fixed; top: 0; left: 0; right: 0; background: #2ECC71; color: #fff; text-align: center; font-size: 12px; font-weight: 600; padding: 6px; z-index: 888; transform: translateY(-100%); transition: transform 0.3s; }
+#sync-bar.show { transform: translateY(0); }
+#sync-bar.erro { background: #E74C3C; }
+
+#toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: #2ECC71; color: #fff; padding: 12px 24px; border-radius: 24px; font-size: 14px; font-weight: 600; box-shadow: 0 4px 20px rgba(0,0,0,0.2); z-index: 999; display: none; white-space: nowrap; }
+.tela { display: none; }
+.tela.ativa { display: block; }
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spin"></div>
+  <div class="load-text">Carregando dados...</div>
+</div>
+<div id="sync-bar"></div>
+
+<!-- HOME -->
+<div id="tela-home" class="tela ativa">
+  <div class="hero">
+    <div class="hero-label">Controle Financeiro</div>
+    <div class="hero-total" id="home-total">R$ 0,00</div>
+    <div class="hero-sub" id="home-mes-label">—</div>
+    <div class="hero-pills" id="home-pills"></div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="section-label">Mês</div>
+      <div class="mes-scroll" id="mes-scroll"></div>
+    </div>
+    <div class="acoes">
+      <button class="acao-btn primario" onclick="irParaLancar()">
+        <div class="acao-icon">＋</div>
+        <div class="acao-titulo">Lançar</div>
+        <div class="acao-sub">Registrar gasto</div>
+      </button>
+      <button class="acao-btn secundario" onclick="irParaResumo()">
+        <div class="acao-icon">📊</div>
+        <div class="acao-titulo">Resumo</div>
+        <div class="acao-sub" style="color:#888">Por categoria</div>
+      </button>
+      <button class="acao-btn terciario" onclick="irParaSalario()">
+        <div class="acao-icon">💼</div>
+        <div class="acao-titulo">Salário</div>
+        <div class="acao-sub">Calcular líquido</div>
+      </button>
+      <button class="acao-btn quaternario" onclick="irParaParcelas()">
+        <div class="acao-icon">🔄</div>
+        <div class="acao-titulo">Parcelas</div>
+        <div class="acao-sub">Gastos recorrentes</div>
+      </button>
+    </div>
+    <div id="home-lista"></div>
+  </div>
+</div>
+
+<!-- LANÇAR -->
+<div id="tela-lancar" class="tela">
+  <div class="hero">
+    <button class="back-btn" onclick="voltarHome()">← Voltar</button>
+    <div class="hero-label" id="lancar-mes-label">—</div>
+    <div class="hero-total" id="lancar-total">R$ 0,00</div>
+    <div class="hero-sub">total lançado no mês</div>
+  </div>
+  <div class="content">
+    <div class="card">
+      <div class="section-label">Categoria</div>
+      <div class="cat-grid" id="cat-grid"></div>
+    </div>
+    <div id="form-lancar" style="display:none">
+      <div class="form-card">
+        <div class="form-titulo" id="form-titulo">Novo lançamento</div>
+        <div class="form-label">Descrição (opcional)</div>
+        <input class="form-input" id="input-desc" type="text" placeholder="Ex: Conta de luz">
+        <div class="form-label">Valor (R$)</div>
+        <input class="form-input" id="input-valor" type="number" inputmode="decimal" placeholder="0,00" min="0" step="0.01">
+        <div class="form-label">Data</div>
+        <input class="form-input" id="input-data" type="date">
+        <div class="parcela-toggle" onclick="toggleParcela()">
+          <div class="toggle-switch" id="toggle-parc"><div class="toggle-knob"></div></div>
+          <div>
+            <div class="toggle-label">🔄 Compra parcelada?</div>
+            <div class="toggle-sub">Replica nos próximos meses</div>
+          </div>
+        </div>
+        <div id="parcela-campos" style="display:none">
+          <div class="form-row">
+            <div>
+              <div class="form-label">Parcela atual</div>
+              <input class="form-input" id="input-parc-atual" type="number" inputmode="numeric" placeholder="1" min="1">
+            </div>
+            <div>
+              <div class="form-label">Total de parcelas</div>
+              <input class="form-input" id="input-parc-total" type="number" inputmode="numeric" placeholder="12" min="1">
+            </div>
+          </div>
+        </div>
+        <button class="btn-salvar" onclick="salvarLancamento()">+ Salvar lançamento</button>
+      </div>
+      <div id="lista-lanc-cat"></div>
+    </div>
+  </div>
+</div>
+
+<!-- RESUMO -->
+<div id="tela-resumo" class="tela">
+  <div class="hero" style="background: linear-gradient(135deg, #0F3460 0%, #16213E 100%)">
+    <button class="back-btn" onclick="voltarHome()">← Voltar</button>
+    <div class="hero-label" id="resumo-mes-label">—</div>
+    <div class="hero-total" id="resumo-total">R$ 0,00</div>
+    <div class="hero-sub">total do mês</div>
+  </div>
+  <div class="content"><div id="resumo-lista"></div></div>
+</div>
+
+<!-- SALÁRIO -->
+<div id="tela-salario" class="tela">
+  <div class="hero">
+    <button class="back-btn" onclick="voltarHome()">← Voltar</button>
+    <div class="hero-label">Calculadora de Salário</div>
+    <div class="hero-total">💼 CLT 2025</div>
+    <div class="hero-sub">INSS + IRRF + Sindicato</div>
+  </div>
+  <div class="content">
+    <div class="salario-card">
+      <div class="sal-titulo">Informe seu salário bruto</div>
+      <div class="sal-label">Salário bruto (R$)</div>
+      <input class="sal-input" id="sal-bruto" type="number" inputmode="decimal" placeholder="0,00" oninput="calcularSalario()">
+      <div id="sal-resultado" style="display:none">
+        <div class="sal-breakdown">
+          <div class="sal-row"><span class="label">Salário bruto</span><span id="sal-bruto-val">—</span></div>
+          <div class="sal-row"><span class="label">(-) INSS 9,1010%</span><span class="val-neg" id="sal-inss">—</span></div>
+          <div class="sal-row"><span class="label">(-) IRRF</span><span class="val-neg" id="sal-irrf">—</span></div>
+          <div class="sal-row"><span class="label">(-) Sindicato</span><span class="val-neg">- R$ 35,00</span></div>
+          <div class="sal-row total"><span class="label">💰 Salário líquido</span><span class="val-pos" id="sal-liquido">—</span></div>
+        </div>
+        <div class="sal-saldo">
+          <div class="sal-saldo-label">Saldo após gastos do mês</div>
+          <div class="sal-saldo-val" id="sal-saldo-val">—</div>
+          <div class="sal-saldo-sub" id="sal-saldo-sub">—</div>
+        </div>
+      </div>
+    </div>
+    <div style="background:#fff;border-radius:14px;padding:14px 16px;font-size:12px;color:#888;line-height:1.8">
+      <strong style="color:#555">ℹ️ Como é calculado</strong><br>
+      • INSS: 9,1010% sobre o bruto<br>
+      • IRRF: tabela progressiva 2025<br>
+      • Sindicato: R$ 35,00 fixo<br>
+      • Isento de IR até R$ 2.259,20
+    </div>
+  </div>
+</div>
+
+<!-- PARCELAS -->
+<div id="tela-parcelas" class="tela">
+  <div class="hero" style="background: linear-gradient(135deg, #1a3a5c 0%, #0F3460 100%)">
+    <button class="back-btn" onclick="voltarHome()">← Voltar</button>
+    <div class="hero-label">Compras Parceladas</div>
+    <div class="hero-total">🔄 Recorrentes</div>
+    <div class="hero-sub">Lançadas automaticamente por mês</div>
+  </div>
+  <div class="content">
+    <div class="tabs">
+      <button class="tab ativo" id="tab-ativas" onclick="switchTab('ativas')">Ativas</button>
+      <button class="tab" id="tab-concluidas" onclick="switchTab('concluidas')">Concluídas</button>
+    </div>
+    <div id="parc-lista"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── CONFIG SUPABASE ──────────────────────────────────────────────────────
+const SUPA_URL = "https://avzgwsrazgnmrdygwqqg.supabase.co";
+const SUPA_KEY = "sb_publishable_L4SLWxl86Q-ZfLq9d3QnPg_nqlT2uwZ";
+
+const CATEGORIAS = [
+  { id:"casa",            label:"Casa",             emoji:"🏠", grupo:"Moradia" },
+  { id:"internet",        label:"Internet",         emoji:"🌐", grupo:"Moradia" },
+  { id:"celular",         label:"Celular",          emoji:"📱", grupo:"Moradia" },
+  { id:"viagem_passagem", label:"Passagem",         emoji:"✈️", grupo:"Viagem" },
+  { id:"viagem_reserva",  label:"Reserva Hotel",    emoji:"🏨", grupo:"Viagem" },
+  { id:"mercado",         label:"Mercado",          emoji:"🛒", grupo:"Alimentação" },
+  { id:"lanches",         label:"Lanches",          emoji:"🥪", grupo:"Alimentação" },
+  { id:"dates",           label:"Dates",            emoji:"💑", grupo:"Lazer" },
+  { id:"automovel",       label:"Automóvel",        emoji:"🚗", grupo:"Transporte" },
+  { id:"eletronicos",     label:"Eletrônicos",      emoji:"💻", grupo:"Outros" },
+  { id:"presentes",       label:"Presentes",        emoji:"🎁", grupo:"Outros" },
+  { id:"compras_gerais",  label:"Compras Gerais",   emoji:"🛍️", grupo:"Outros" },
+  { id:"pet",             label:"Pet",              emoji:"🐾", grupo:"Outros" },
+  { id:"farmacia",        label:"Farmácia",         emoji:"🏥", grupo:"Saúde" },
+  { id:"remedio",         label:"Remédio",          emoji:"💊", grupo:"Saúde" },
+  { id:"reserva",         label:"Reserva Emerg.",   emoji:"🏦", grupo:"Poupança" },
+];
+
+const MESES = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+const hoje = new Date();
+let mesSel = hoje.getMonth();
+let anoSel = hoje.getFullYear();
+let catSel = null;
+let parcelaAtiva = false;
+let tabAtiva = "ativas";
+
+// ── DEVICE ID ─────────────────────────────────────────────────────────────
+function getDeviceId() {
+  let id = localStorage.getItem("fin_device_id");
+  if (!id) {
+    id = "dev_" + Math.random().toString(36).substr(2,9) + "_" + Date.now();
+    localStorage.setItem("fin_device_id", id);
+  }
+  return id;
+}
+const DEVICE_ID = getDeviceId();
+
+// ── SUPABASE API ──────────────────────────────────────────────────────────
+async function sbGet(table, params="") {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${table}?${params}`, {
+    headers: { "apikey": SUPA_KEY, "Authorization": `Bearer ${SUPA_KEY}` }
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbPost(table, body) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${table}`, {
+    method: "POST",
+    headers: { "apikey": SUPA_KEY, "Authorization": `Bearer ${SUPA_KEY}`, "Content-Type": "application/json", "Prefer": "return=representation" },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(await r.text());
+  return r.json();
+}
+
+async function sbPatch(table, id, body) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: "PATCH",
+    headers: { "apikey": SUPA_KEY, "Authorization": `Bearer ${SUPA_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify(body)
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+async function sbDelete(table, id) {
+  const r = await fetch(`${SUPA_URL}/rest/v1/${table}?id=eq.${id}`, {
+    method: "DELETE",
+    headers: { "apikey": SUPA_KEY, "Authorization": `Bearer ${SUPA_KEY}` }
+  });
+  if (!r.ok) throw new Error(await r.text());
+}
+
+// ── CACHE LOCAL (fallback offline) ───────────────────────────────────────
+let cache = { lancamentos: [], parcelas: [], salario: 0 };
+
+function salvarCache() {
+  localStorage.setItem("fin_cache", JSON.stringify(cache));
+}
+
+function carregarCache() {
+  try {
+    const c = localStorage.getItem("fin_cache");
+    if (c) cache = JSON.parse(c);
+  } catch {}
+}
+
+// ── CARREGAR DADOS DO SUPABASE ────────────────────────────────────────────
+async function carregarDados() {
+  showLoading(true);
+  try {
+    const [lancs, parcs, cfgs] = await Promise.all([
+      sbGet("lancamentos", `device_id=eq.${DEVICE_ID}&order=id.desc`),
+      sbGet("parcelas", `device_id=eq.${DEVICE_ID}&order=id.desc`),
+      sbGet("configuracoes", `device_id=eq.${DEVICE_ID}`)
+    ]);
+    cache.lancamentos = lancs;
+    cache.parcelas = parcs;
+    cache.salario = cfgs.length > 0 ? parseFloat(cfgs[0].salario_bruto) : 0;
+    salvarCache();
+  } catch(e) {
+    console.error("Erro ao carregar:", e);
+    carregarCache();
+    showSyncBar("Modo offline — dados do cache local", true);
+  }
+  showLoading(false);
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────
+function brl(v) { return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"}); }
+
+function getLancamentosMes(m, a) {
+  return cache.lancamentos.filter(l => l.mes === m && l.ano === a);
+}
+
+function totalMes(m, a) {
+  const lancs = getLancamentosMes(m, a);
+  let total = lancs.reduce((acc, l) => acc + parseFloat(l.valor), 0);
+  cache.parcelas.filter(p => !p.concluida && parcelaNoMes(p, m, a))
+    .forEach(p => total += parseFloat(p.valor));
+  return total;
+}
+
+function parcelaNoMes(p, m, a) {
+  const ini = new Date(p.data_inicio + "T00:00:00");
+  const diff = (a - ini.getFullYear()) * 12 + (m - ini.getMonth());
+  return diff >= 0 && diff < p.total_parcelas;
+}
+
+function parcelaAtualNum(p, m, a) {
+  const ini = new Date(p.data_inicio + "T00:00:00");
+  return (a - ini.getFullYear()) * 12 + (m - ini.getMonth()) + 1;
+}
+
+function calcIRRF(base) {
+  if (base <= 2259.20) return 0;
+  if (base <= 2826.65) return base * 0.075 - 169.44;
+  if (base <= 3751.05) return base * 0.15 - 381.44;
+  if (base <= 4664.68) return base * 0.225 - 662.77;
+  return base * 0.275 - 896;
+}
+
+function calcLiquido(bruto) {
+  const inss = bruto * 0.091010;
+  const irrf = Math.max(0, calcIRRF(bruto - inss));
+  return bruto - inss - irrf - 35;
+}
+
+// ── UI HELPERS ────────────────────────────────────────────────────────────
+function showLoading(v) { document.getElementById("loading").style.display = v ? "flex" : "none"; }
+
+function showSyncBar(msg, erro=false) {
+  const b = document.getElementById("sync-bar");
+  b.textContent = msg;
+  b.className = "show" + (erro ? " erro" : "");
+  setTimeout(() => b.className = "", 3000);
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.style.display = "block";
+  setTimeout(() => t.style.display = "none", 2200);
+}
+
+function showTela(id) {
+  document.querySelectorAll(".tela").forEach(t => t.classList.remove("ativa"));
+  document.getElementById(id).classList.add("ativa");
+  window.scrollTo(0, 0);
+}
+
+function voltarHome() {
+  catSel = null; parcelaAtiva = false;
+  renderHome(); showTela("tela-home");
+}
+
+// ── HOME ──────────────────────────────────────────────────────────────────
+function renderHome() {
+  const total = totalMes(mesSel, anoSel);
+  document.getElementById("home-total").textContent = brl(total);
+  document.getElementById("home-mes-label").textContent = `${MESES[mesSel]} ${anoSel}`;
+
+  const sal = cache.salario;
+  const pills = document.getElementById("home-pills");
+  if (sal > 0) {
+    const liq = calcLiquido(sal);
+    const saldo = liq - total;
+    pills.innerHTML = `
+      <div class="hero-pill"><span>${brl(liq)}</span> líquido</div>
+      <div class="hero-pill ${saldo>=0?'verde':'vermelho'}"><span>${brl(Math.abs(saldo))}</span> ${saldo>=0?'sobrando':'negativo'}</div>`;
+  } else {
+    pills.innerHTML = `<div class="hero-pill" onclick="irParaSalario()" style="cursor:pointer">💼 Informe seu salário</div>`;
+  }
+
+  const scroll = document.getElementById("mes-scroll");
+  scroll.innerHTML = "";
+  MESES.forEach((m, i) => {
+    const t = totalMes(i, anoSel);
+    const btn = document.createElement("button");
+    btn.className = "mes-btn" + (i===mesSel?" ativo":"");
+    btn.innerHTML = `<div class="mes-nome">${m.slice(0,3)}</div>${t>0?`<div class="mes-val">${brl(t)}</div>`:""}`;
+    btn.onclick = () => { mesSel = i; renderHome(); };
+    scroll.appendChild(btn);
+  });
+  scroll.querySelectorAll(".mes-btn")[mesSel]?.scrollIntoView({inline:"center",behavior:"smooth"});
+
+  const lista = document.getElementById("home-lista");
+  const lancs = getLancamentosMes(mesSel, anoSel);
+  const parcMes = cache.parcelas.filter(p => !p.concluida && parcelaNoMes(p, mesSel, anoSel));
+
+  // agrupar lançamentos por categoria
+  const porCat = {};
+  lancs.forEach(l => { porCat[l.cat_id] = (porCat[l.cat_id]||0) + parseFloat(l.valor); });
+
+  const temDados = Object.keys(porCat).length > 0 || parcMes.length > 0;
+  if (!temDados) {
+    lista.innerHTML = `<div class="empty"><div class="empty-icon">💸</div><div class="empty-text">Nenhum gasto em ${MESES[mesSel]}</div><div class="empty-sub">Toque em Lançar para começar</div></div>`;
+    return;
+  }
+  lista.innerHTML = "";
+  const lbl = document.createElement("div"); lbl.className = "section-label"; lbl.textContent = "Este mês";
+  lista.appendChild(lbl);
+  CATEGORIAS.forEach(c => {
+    const sub = porCat[c.id] || 0;
+    if (!sub) return;
+    const div = document.createElement("div"); div.className = "quick-item";
+    div.innerHTML = `<div class="quick-nome">${c.emoji} ${c.label}</div><div class="quick-val">${brl(sub)}</div>`;
+    lista.appendChild(div);
+  });
+  parcMes.forEach(p => {
+    const curr = parcelaAtualNum(p, mesSel, anoSel);
+    const div = document.createElement("div"); div.className = "quick-item";
+    div.innerHTML = `<div class="quick-nome">🔄 ${p.descricao} <span style="font-size:10px;color:#888">${curr}/${p.total_parcelas}</span></div><div class="quick-val">${brl(p.valor)}</div>`;
+    lista.appendChild(div);
+  });
+}
+
+// ── LANÇAR ────────────────────────────────────────────────────────────────
+function irParaLancar() { catSel = null; parcelaAtiva = false; renderLancar(); showTela("tela-lancar"); }
+
+function renderLancar() {
+  const total = totalMes(mesSel, anoSel);
+  document.getElementById("lancar-total").textContent = brl(total);
+  document.getElementById("lancar-mes-label").textContent = `${MESES[mesSel]} ${anoSel}`;
+
+  const lancs = getLancamentosMes(mesSel, anoSel);
+  const porCat = {};
+  lancs.forEach(l => { porCat[l.cat_id] = (porCat[l.cat_id]||0) + parseFloat(l.valor); });
+
+  const grid = document.getElementById("cat-grid"); grid.innerHTML = "";
+  CATEGORIAS.forEach(c => {
+    const sub = porCat[c.id] || 0;
+    const btn = document.createElement("button");
+    btn.className = "cat-btn" + (catSel===c.id?" ativo":"");
+    btn.innerHTML = `<div class="cat-emoji">${c.emoji}</div><div class="cat-nome">${c.label}</div>${sub>0?`<div class="cat-subtotal">${brl(sub)}</div>`:""}`;
+    btn.onclick = () => { catSel = c.id; renderLancar(); };
+    grid.appendChild(btn);
+  });
+
+  const form = document.getElementById("form-lancar");
+  if (catSel) {
+    form.style.display = "block";
+    const cat = CATEGORIAS.find(c => c.id===catSel);
+    document.getElementById("form-titulo").textContent = `${cat.emoji} Novo lançamento — ${cat.label}`;
+    if (!document.getElementById("input-data").value)
+      document.getElementById("input-data").value = hoje.toISOString().split("T")[0];
+    renderListaCat();
+  } else { form.style.display = "none"; }
+}
+
+function toggleParcela() {
+  parcelaAtiva = !parcelaAtiva;
+  document.getElementById("toggle-parc").className = "toggle-switch" + (parcelaAtiva?" on":"");
+  document.getElementById("parcela-campos").style.display = parcelaAtiva ? "block" : "none";
+}
+
+async function salvarLancamento() {
+  if (!catSel) return;
+  const v = parseFloat(document.getElementById("input-valor").value);
+  if (!v || v <= 0) { alert("Informe um valor válido."); return; }
+  const desc = document.getElementById("input-desc").value.trim();
+  const data = document.getElementById("input-data").value;
+
+  showLoading(true);
+  try {
+    if (parcelaAtiva) {
+      const parcAtual = parseInt(document.getElementById("input-parc-atual").value)||1;
+      const parcTotal = parseInt(document.getElementById("input-parc-total").value)||1;
+      if (parcTotal < parcAtual) { alert("Total de parcelas deve ser maior ou igual à parcela atual."); showLoading(false); return; }
+      const dataBase = new Date(data + "T00:00:00");
+      dataBase.setMonth(dataBase.getMonth() - (parcAtual - 1));
+      const di = dataBase.toISOString().split("T")[0];
+      const nova = await sbPost("parcelas", { device_id: DEVICE_ID, cat_id: catSel, descricao: desc || CATEGORIAS.find(c=>c.id===catSel).label, valor: v, total_parcelas: parcTotal, data_inicio: di, concluida: false });
+      cache.parcelas.unshift(nova[0]);
+      showToast(`✓ Parcelado em ${parcTotal}x de ${brl(v)}!`);
+    } else {
+      const novo = await sbPost("lancamentos", { device_id: DEVICE_ID, mes: mesSel, ano: anoSel, cat_id: catSel, descricao: desc, valor: v, data });
+      cache.lancamentos.unshift(novo[0]);
+      showToast("✓ Lançamento salvo!");
+    }
+    salvarCache();
+    showSyncBar("✓ Sincronizado com a nuvem");
+    document.getElementById("input-desc").value = "";
+    document.getElementById("input-valor").value = "";
+    document.getElementById("input-parc-atual").value = "";
+    document.getElementById("input-parc-total").value = "";
+    parcelaAtiva = false;
+    document.getElementById("toggle-parc").className = "toggle-switch";
+    document.getElementById("parcela-campos").style.display = "none";
+    renderLancar();
+  } catch(e) {
+    showSyncBar("Erro ao salvar — verifique sua conexão", true);
+  }
+  showLoading(false);
+}
+
+function renderListaCat() {
+  const lista = document.getElementById("lista-lanc-cat"); lista.innerHTML = "";
+  const items = cache.lancamentos.filter(l => l.mes===mesSel && l.ano===anoSel && l.cat_id===catSel);
+  const parcsCat = cache.parcelas.filter(p => p.cat_id===catSel && !p.concluida && parcelaNoMes(p, mesSel, anoSel));
+  if (!items.length && !parcsCat.length) return;
+  const lbl = document.createElement("div"); lbl.className = "section-label"; lbl.textContent = "Lançamentos"; lista.appendChild(lbl);
+  parcsCat.forEach(p => {
+    const curr = parcelaAtualNum(p, mesSel, anoSel);
+    const div = document.createElement("div"); div.className = "lancamento-item";
+    div.innerHTML = `<div class="lanc-row"><div><div class="lanc-valor">${brl(p.valor)}</div><div class="lanc-desc">${p.descricao}</div><div class="lanc-parcela">🔄 Parcela ${curr} de ${p.total_parcelas}</div></div><button class="btn-remover" onclick="encerrarParcela(${p.id})">✕</button></div>`;
+    lista.appendChild(div);
+  });
+  items.forEach(e => {
+    const dataFmt = e.data ? new Date(e.data + "T00:00:00").toLocaleDateString("pt-BR") : "";
+    const div = document.createElement("div"); div.className = "lancamento-item";
+    div.innerHTML = `<div class="lanc-row"><div><div class="lanc-valor">${brl(e.valor)}</div><div class="lanc-desc">${e.descricao||"—"} · ${dataFmt}</div></div><button class="btn-remover" onclick="removerLanc(${e.id})">✕</button></div>`;
+    lista.appendChild(div);
+  });
+}
+
+async function removerLanc(id) {
+  showLoading(true);
+  try {
+    await sbDelete("lancamentos", id);
+    cache.lancamentos = cache.lancamentos.filter(l => l.id !== id);
+    salvarCache(); showSyncBar("✓ Removido"); renderLancar();
+  } catch { showSyncBar("Erro ao remover", true); }
+  showLoading(false);
+}
+
+async function encerrarParcela(id) {
+  if (!confirm("Encerrar esta parcela?")) return;
+  showLoading(true);
+  try {
+    await sbPatch("parcelas", id, { concluida: true });
+    cache.parcelas = cache.parcelas.map(p => p.id===id ? {...p, concluida:true} : p);
+    salvarCache(); showSyncBar("✓ Parcela encerrada"); renderLancar();
+  } catch { showSyncBar("Erro ao encerrar", true); }
+  showLoading(false);
+}
+
+// ── RESUMO ────────────────────────────────────────────────────────────────
+function irParaResumo() { renderResumo(); showTela("tela-resumo"); }
+
+function renderResumo() {
+  const total = totalMes(mesSel, anoSel);
+  document.getElementById("resumo-total").textContent = brl(total);
+  document.getElementById("resumo-mes-label").textContent = `Resumo — ${MESES[mesSel]} ${anoSel}`;
+  const lista = document.getElementById("resumo-lista"); lista.innerHTML = "";
+  if (!total) { lista.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-text">Nenhum lançamento</div></div>`; return; }
+
+  const lancs = getLancamentosMes(mesSel, anoSel);
+  const parcMes = cache.parcelas.filter(p => !p.concluida && parcelaNoMes(p, mesSel, anoSel));
+  const porCat = {};
+  lancs.forEach(l => { porCat[l.cat_id] = (porCat[l.cat_id]||0) + parseFloat(l.valor); });
+  parcMes.forEach(p => { porCat[p.cat_id] = (porCat[p.cat_id]||0) + parseFloat(p.valor); });
+
+  const grupos = [...new Set(CATEGORIAS.map(c => c.grupo))];
+  grupos.forEach(grupo => {
+    const cats = CATEGORIAS.filter(c => c.grupo===grupo);
+    const tGrupo = cats.reduce((acc,c) => acc+(porCat[c.id]||0), 0);
+    if (!tGrupo) return;
+    const gh = document.createElement("div"); gh.className = "grupo-header";
+    gh.innerHTML = `<span>${grupo}</span><span>${brl(tGrupo)}</span>`; lista.appendChild(gh);
+    cats.forEach(c => {
+      const sub = porCat[c.id] || 0; if (!sub) return;
+      const pct = total > 0 ? (sub/total)*100 : 0;
+      const div = document.createElement("div"); div.className = "resumo-cat";
+      div.innerHTML = `<div class="resumo-row"><div class="resumo-nome">${c.emoji} ${c.label}</div><div class="resumo-valor">${brl(sub)}</div></div><div class="barra-bg"><div class="barra-fill" style="width:${Math.min(pct,100)}%"></div></div><div class="barra-pct">${pct.toFixed(1)}% do total</div>`;
+      lista.appendChild(div);
+    });
+  });
+}
+
+// ── SALÁRIO ───────────────────────────────────────────────────────────────
+function irParaSalario() {
+  if (cache.salario > 0) { document.getElementById("sal-bruto").value = cache.salario; calcularSalario(); }
+  showTela("tela-salario");
+}
+
+async function calcularSalario() {
+  const bruto = parseFloat(document.getElementById("sal-bruto").value)||0;
+  if (!bruto) { document.getElementById("sal-resultado").style.display="none"; return; }
+  const inss = bruto * 0.091010;
+  const irrf = Math.max(0, calcIRRF(bruto - inss));
+  const liq = bruto - inss - irrf - 35;
+  const gastos = totalMes(mesSel, anoSel);
+  const saldo = liq - gastos;
+
+  document.getElementById("sal-resultado").style.display = "block";
+  document.getElementById("sal-bruto-val").textContent = brl(bruto);
+  document.getElementById("sal-inss").textContent = `- ${brl(inss)}`;
+  document.getElementById("sal-irrf").textContent = irrf > 0 ? `- ${brl(irrf)}` : "isento";
+  document.getElementById("sal-liquido").textContent = brl(liq);
+  const sv = document.getElementById("sal-saldo-val");
+  sv.textContent = brl(saldo);
+  sv.className = "sal-saldo-val " + (saldo>=0?"positivo":"negativo");
+  document.getElementById("sal-saldo-sub").textContent = saldo>=0
+    ? `Sobram ${brl(saldo)} após gastos de ${MESES[mesSel]}`
+    : `Gastos excedem o salário em ${brl(Math.abs(saldo))}`;
+
+  // Salvar salário no Supabase com debounce
+  clearTimeout(window._salTimer);
+  window._salTimer = setTimeout(async () => {
+    try {
+      const existe = await sbGet("configuracoes", `device_id=eq.${DEVICE_ID}`);
+      if (existe.length > 0) {
+        await sbPatch("configuracoes", existe[0].id, { salario_bruto: bruto });
+      } else {
+        await sbPost("configuracoes", { device_id: DEVICE_ID, salario_bruto: bruto });
+      }
+      cache.salario = bruto; salvarCache();
+      showSyncBar("✓ Salário sincronizado");
+    } catch { showSyncBar("Erro ao salvar salário", true); }
+  }, 1200);
+}
+
+// ── PARCELAS ──────────────────────────────────────────────────────────────
+function irParaParcelas() { renderParcelas(); showTela("tela-parcelas"); }
+function switchTab(t) {
+  tabAtiva = t;
+  document.getElementById("tab-ativas").className = "tab" + (t==="ativas"?" ativo":"");
+  document.getElementById("tab-concluidas").className = "tab" + (t==="concluidas"?" ativo":"");
+  renderParcelas();
+}
+
+function renderParcelas() {
+  const lista = document.getElementById("parc-lista"); lista.innerHTML = "";
+  const filtradas = cache.parcelas.filter(p => tabAtiva==="ativas" ? !p.concluida : p.concluida);
+  if (!filtradas.length) {
+    lista.innerHTML = `<div class="empty"><div class="empty-icon">🔄</div><div class="empty-text">${tabAtiva==="ativas"?"Nenhuma parcela ativa":"Nenhuma concluída"}</div><div class="empty-sub">Lance um gasto parcelado ao registrar</div></div>`;
+    return;
+  }
+  filtradas.forEach(p => {
+    const curr = parcelaAtualNum(p, mesSel, anoSel);
+    const restantes = p.total_parcelas - curr + 1;
+    const pct = Math.min(((curr-1)/p.total_parcelas)*100, 100);
+    const cat = CATEGORIAS.find(c => c.id===p.cat_id);
+    const div = document.createElement("div");
+    div.style.cssText = "background:#fff;border-radius:14px;padding:14px 16px;margin-bottom:10px;box-shadow:0 1px 6px rgba(0,0,0,0.07)";
+    div.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#1A1A2E">${cat?cat.emoji:""} ${p.descricao}</div>
+          <div style="font-size:12px;color:#888;margin-top:2px">${brl(p.valor)}/mês · ${p.total_parcelas}x no total</div>
+        </div>
+        ${!p.concluida?`<button onclick="encerrarParcela(${p.id})" style="background:#FFF0F0;border:none;color:#E74C3C;border-radius:8px;padding:5px 10px;font-size:12px;cursor:pointer;font-family:inherit">Encerrar</button>`:""}
+      </div>
+      <div style="background:#F0F4FF;border-radius:6px;height:6px;margin-bottom:6px">
+        <div style="background:linear-gradient(90deg,#4A90E2,#0F3460);border-radius:6px;height:6px;width:${pct}%"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:#aaa">
+        <span>${curr-1} pagas</span>
+        <span>${p.concluida?"Encerrada":restantes>0?`${restantes} restantes`:"Última parcela"}</span>
+      </div>`;
+    lista.appendChild(div);
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+(async () => {
+  await carregarDados();
+  renderHome();
+})();
+</script>
+</body>
+</html>
